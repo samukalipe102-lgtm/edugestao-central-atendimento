@@ -20,6 +20,11 @@ data/
 uploads/
 attachments/
 packages/backend/prisma/*.db
+# Exceção: o guia da pasta de PDFs pode ser versionado (não contém PII)
+!data/
+!data/source-pdfs/
+data/source-pdfs/*
+!data/source-pdfs/LEIA-ME.txt
 
 # Documentos oficiais do EduGestão (PII de menores) — NUNCA versionar
 *.pdf

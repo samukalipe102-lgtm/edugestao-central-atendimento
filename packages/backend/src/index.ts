@@ -81,6 +81,11 @@ export async function iniciar(
   return actualPort;
 }
 
+// Superfície de importação de dados oficiais, usada pelo app desktop (menu
+// "Importar dados oficiais") e pelo script CLI.
+export { importarPdfs } from './services/import/index.js';
+export type { ImportFileOutcome } from './services/import/index.js';
+
 // Execução direta via `node dist/index.js` (modo servidor tradicional).
 if (import.meta.url === `file://${process.argv[1]}`) {
   void iniciar();

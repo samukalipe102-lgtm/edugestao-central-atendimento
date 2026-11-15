@@ -1,0 +1,22 @@
+COLOQUE AQUI OS PDFs OFICIAIS DA ESCOLA
+========================================
+
+Esta pasta é IGNORADA pelo git (ver .gitignore: *.pdf e data/).
+Os arquivos com PII de menores NUNCA são versionados nem enviados ao GitHub.
+
+Como usar:
+  1. Copie os PDFs oficiais para dentro desta pasta
+     (data/source-pdfs/).
+  2. Avise o Kiro que os arquivos já estão aqui.
+  3. O importador lê os PDFs, extrai o texto e popula a base oficial.
+
+O que o importador faz com os dados:
+  - Alunos, responsáveis e professores → tabela OfficialPerson.
+  - Cada importação vira um ImportBatch (reversível, com histórico).
+  - Duplicatas são detectadas (não cria pessoa repetida).
+  - Campos ausentes ficam nulos e são marcados como inconsistência
+    (nada é inventado).
+  - Senhas temporárias que apareçam no PDF são DESCARTADAS na extração
+    (nunca gravadas nem registradas em log).
+
+Este arquivo-guia pode ficar versionado; os PDFs, não.

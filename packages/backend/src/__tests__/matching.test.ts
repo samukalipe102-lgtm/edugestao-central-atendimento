@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { execSync } from 'node:child_process';
+import { describe, it, expect, afterAll } from 'vitest';
 import { prisma } from '../db.js';
 import { matchInboundToRequest } from '../services/matching.js';
 import { generateProtocol } from '../services/protocol.js';
@@ -25,19 +24,9 @@ function inbound(overrides: Partial<InboundMessage>): InboundMessage {
   };
 }
 
-beforeAll(() => {
-  process.env.DATABASE_URL = 'file:./data/test.db';
-  execSync('npx prisma migrate deploy', {
-    cwd: new URL('../..', import.meta.url).pathname,
-    stdio: 'ignore',
-    env: { ...process.env },
-  });
-});
-
 afterAll(async () => {
   await prisma.message.deleteMany();
   await prisma.request.deleteMany();
-  await prisma.$disconnect();
 });
 
 describe('transições de status', () => {
