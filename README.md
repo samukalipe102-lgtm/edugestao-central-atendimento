@@ -38,10 +38,19 @@ docs/        Guias de configuração (OAuth Gmail, Azure/Graph), arquitetura
 
 | Módulo | Estado |
 |---|---|
-| Esqueleto do monorepo | em construção |
-| Schema do banco | em construção |
-| Integração Gmail (envio) | pendente de credenciais OAuth |
-| Integração Outlook (recebimento) | pendente de registro no Azure |
+| Monorepo + banco (schema completo, migração aplicada) | pronto |
+| API backend (auth, solicitações, fila, dashboard, relatórios, settings) | pronto e testado |
+| Worker de segundo plano (poll Outlook + fila de envio, com pausa em falhas) | pronto |
+| Painel web (responsivo, 6 telas) | pronto (build limpo) |
+| Integração Gmail (envio) — código real | pronto; falta você conectar o OAuth (`docs/INTEGRACAO-GMAIL.md`) |
+| Integração Outlook (recebimento) — código real | pronto; falta registrar no Azure (`docs/INTEGRACAO-OUTLOOK.md`) |
 | IA de acompanhamento | desligada por opção (encaixe preparado para Gemini) |
 
-Consulte `docs/` para configurar as integrações.
+Para rodar, veja `docs/SETUP.md`. Para conectar os e-mails, veja os dois guias de
+integração em `docs/`.
+
+## Testes
+
+```bash
+npm test -w packages/backend   # lógica de vinculação e transições, com SQLite real
+```
