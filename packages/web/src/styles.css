@@ -1,0 +1,265 @@
+:root {
+  /* Identidade visual EduGestão: sóbria, institucional, sem cores fortes. */
+  --azul: #1f4e79;
+  --azul-claro: #2e6da4;
+  --fundo: #f4f6f9;
+  --superficie: #ffffff;
+  --borda: #e2e8f0;
+  --texto: #1e293b;
+  --texto-suave: #64748b;
+  --ok: #2f855a;
+  --alerta: #b7791f;
+  --erro: #c53030;
+  --radius: 10px;
+  --sombra: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+body {
+  font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+  background: var(--fundo);
+  color: var(--texto);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* --- Layout responsivo --- */
+.shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+.sidebar {
+  background: var(--azul);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+.sidebar h1 {
+  font-size: 1.1rem;
+  margin: 0 0 0.25rem;
+}
+.sidebar .sub {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-bottom: 1.5rem;
+}
+.sidebar nav a {
+  display: block;
+  color: #e6eef7;
+  text-decoration: none;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 0.2rem;
+  font-size: 0.92rem;
+}
+.sidebar nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.sidebar nav a.active {
+  background: var(--azul-claro);
+  font-weight: 600;
+}
+.sidebar .foot {
+  margin-top: auto;
+  font-size: 0.8rem;
+}
+.sidebar button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5rem;
+  width: 100%;
+  cursor: pointer;
+}
+
+.main {
+  padding: 1.5rem;
+  overflow-x: hidden; /* nunca rolagem horizontal */
+  max-width: 100%;
+}
+.page-title {
+  margin: 0 0 1rem;
+  font-size: 1.4rem;
+}
+
+/* --- Cards / grid --- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.card {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--sombra);
+}
+.card .n {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--azul);
+}
+.card .l {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.panel {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--sombra);
+  margin-bottom: 1.5rem;
+}
+.panel h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.75rem;
+}
+
+/* --- Tabelas --- */
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+th,
+td {
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--borda);
+}
+th {
+  color: var(--texto-suave);
+  font-weight: 600;
+}
+
+/* --- Badges de status --- */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge.NOVA { background: #e6f0fb; color: var(--azul); }
+.badge.PENDENTE { background: #fef3c7; color: var(--alerta); }
+.badge.EM_ATENDIMENTO { background: #dbeafe; color: var(--azul-claro); }
+.badge.AGUARDANDO_CORRECAO { background: #fee2e2; color: var(--erro); }
+.badge.AGUARDANDO_RESPOSTA { background: #ede9fe; color: #6b46c1; }
+.badge.RESPONDIDA { background: #d1fae5; color: var(--ok); }
+.badge.ARQUIVADA { background: #e2e8f0; color: var(--texto-suave); }
+
+.dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 0.4rem;
+}
+.dot.on { background: var(--ok); }
+.dot.off { background: var(--erro); }
+
+/* --- Botões / forms --- */
+button.primary {
+  background: var(--azul);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+button.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+button.ghost {
+  background: transparent;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+}
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.55rem;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  font: inherit;
+}
+label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+  margin: 0.75rem 0 0.25rem;
+}
+.msg-error {
+  color: var(--erro);
+  font-size: 0.9rem;
+}
+.msg-ok {
+  color: var(--ok);
+  font-size: 0.9rem;
+}
+
+/* --- Login --- */
+.login-wrap {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+}
+.login-box {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--radius);
+  padding: 2rem;
+  width: min(380px, 92vw);
+  box-shadow: var(--sombra);
+}
+
+/* --- Mobile --- */
+@media (max-width: 760px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+  .sidebar .sub,
+  .sidebar .foot {
+    display: none;
+  }
+  .sidebar nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .sidebar nav a {
+    margin: 0;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.82rem;
+  }
+}
