@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment / secrets — NUNCA versionar
+.env
+.env.*
+!.env.example
+
+# Banco de dados local e dados sensíveis (PII) — NUNCA versionar
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/
+uploads/
+attachments/
+packages/backend/prisma/*.db
+
+# Documentos oficiais do EduGestão (PII de menores) — NUNCA versionar
+*.pdf
+imports/
+
+# Tokens OAuth / credenciais
+tokens/
+credentials.json
+client_secret*.json
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

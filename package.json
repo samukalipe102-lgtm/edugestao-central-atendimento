@@ -1,0 +1,22 @@
+{
+  "name": "edugestao-central-atendimento",
+  "private": true,
+  "version": "0.1.0",
+  "description": "EduGestão — Central de Atendimento Escolar por e-mail",
+  "workspaces": [
+    "packages/shared",
+    "packages/backend",
+    "packages/worker",
+    "packages/web"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm run build -w packages/shared && npm run build -w packages/backend && npm run build -w packages/worker",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "db:generate": "npm run db:generate -w packages/backend",
+    "db:migrate": "npm run db:migrate -w packages/backend"
+  }
+}
