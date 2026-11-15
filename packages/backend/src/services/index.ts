@@ -4,4 +4,5 @@ export { config } from '../config.js';
 export { ingestInbound } from './ingest.js';
 export { processQueueBatch, recentFailureCount } from './queue.js';
 export { getAutomation } from './settings.js';
-export { outlookFetchMessages } from '../integrations/outlook.js';
+export { gmailFetchMessages } from '../integrations/gmail.js';
+export { startBackgroundWorker, stopBackgroundWorker } from '../worker/runner.js';

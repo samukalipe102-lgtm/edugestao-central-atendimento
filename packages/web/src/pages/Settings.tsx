@@ -78,7 +78,7 @@ export function SettingsPage() {
               gap: '0.75rem',
             }}
           >
-            {field('pollIntervalMinutes', 'Intervalo de verificação do Outlook (min)')}
+            {field('pollIntervalMinutes', 'Intervalo de verificação do recebimento (min)')}
             {field('queueBatchSize', 'Mensagens por lote', 50)}
             {field('queueIntervalMinutes', 'Intervalo entre lotes (min)')}
             {field('pauseAfterFailures', 'Pausar após N falhas', 100)}

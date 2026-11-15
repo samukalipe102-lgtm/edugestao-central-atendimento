@@ -1,6 +1,6 @@
 import { prisma } from '../db.js';
 import { MATCH_CONFIDENCE } from '@edugestao/shared';
-import type { InboundMessage } from '../integrations/outlook.js';
+import type { InboundMessage } from '../integrations/gmail.js';
 import { matchInboundToRequest } from './matching.js';
 import { changeStatus } from './requests.js';
 import { audit } from './audit.js';
@@ -12,7 +12,7 @@ export interface IngestOutcome {
 }
 
 /**
- * Processa uma mensagem recebida no Outlook:
+ * Processa uma mensagem recebida na conta de recebimento (Gmail):
  *  - evita duplicatas (mesmo internetMessageId já registrado);
  *  - vincula a um protocolo existente quando o vínculo é confiável;
  *  - caso contrário, registra para conferência humana (sem criar solicitação).
@@ -35,9 +35,9 @@ export async function ingestInbound(msg: InboundMessage): Promise<IngestOutcome>
       data: {
         requestId: match.requestId,
         direction: 'INBOUND',
-        provider: 'OUTLOOK',
+        provider: 'GMAIL_RECV',
         fromAddress: msg.fromAddress,
-        toAddress: 'admsedugestao@outlook.com',
+        toAddress: 'admsedugestao@gmail.com',
         subject: msg.subject,
         body: msg.body,
         messageId: msg.internetMessageId,

@@ -6,17 +6,19 @@ import {
   gmailConfigured,
   gmailHandleCallback,
   gmailTestConnection,
+  type GmailRole,
 } from '../integrations/gmail.js';
-import {
-  outlookAuthUrl,
-  outlookConfigured,
-  outlookHandleCallback,
-  outlookTestConnection,
-} from '../integrations/outlook.js';
 
 export const integrationsRouter = Router();
 
-/** Situação das integrações (público para o admin logado). */
+/** Mapeia o segmento da rota para o papel da conta. */
+function roleFromPath(seg: string): GmailRole | null {
+  if (seg === 'gmail-send') return 'SEND';
+  if (seg === 'gmail-recv') return 'RECV';
+  return null;
+}
+
+/** Situação das integrações (para o admin logado). */
 integrationsRouter.get('/status', requireAuth, async (_req, res) => {
   const accounts = await prisma.mailAccount.findMany({
     select: {
@@ -29,73 +31,64 @@ integrationsRouter.get('/status', requireAuth, async (_req, res) => {
     },
   });
   res.json({
-    gmail: {
-      configured: gmailConfigured(),
-      account: accounts.find((a) => a.provider === 'GMAIL') ?? null,
+    configured: gmailConfigured(),
+    envio: {
+      role: 'gmail-send',
+      expected: 'secretariaedugestao@gmail.com',
+      account: accounts.find((a) => a.provider === 'GMAIL_SEND') ?? null,
     },
-    outlook: {
-      configured: outlookConfigured(),
-      account: accounts.find((a) => a.provider === 'OUTLOOK') ?? null,
+    recebimento: {
+      role: 'gmail-recv',
+      expected: 'admsedugestao@gmail.com',
+      account: accounts.find((a) => a.provider === 'GMAIL_RECV') ?? null,
     },
   });
 });
 
-// --- Gmail OAuth ---
-integrationsRouter.get('/gmail/connect', requireAuth, (_req, res) => {
+// Conectar (gera a URL de autorização). :role = gmail-send | gmail-recv
+integrationsRouter.get('/:role/connect', requireAuth, (req, res) => {
+  const role = roleFromPath(req.params.role);
+  if (!role) {
+    res.status(404).json({ error: 'Integração desconhecida.' });
+    return;
+  }
   if (!gmailConfigured()) {
-    res.status(400).json({ error: 'Credenciais do Gmail não configuradas (.env).' });
+    res.status(400).json({ error: 'Credenciais do Google não configuradas (.env).' });
     return;
   }
-  res.json({ url: gmailAuthUrl() });
+  res.json({ url: gmailAuthUrl(role) });
 });
 
-integrationsRouter.get('/gmail/callback', async (req, res) => {
+// Callback do OAuth (aberto pelo Google; sem auth de sessão).
+integrationsRouter.get('/:role/callback', async (req, res) => {
+  const role = roleFromPath(req.params.role);
+  if (!role) {
+    res.status(404).send('Integração desconhecida.');
+    return;
+  }
   const code = req.query.code as string | undefined;
   if (!code) {
     res.status(400).send('Código de autorização ausente.');
     return;
   }
-  const result = await gmailHandleCallback(code);
+  const result = await gmailHandleCallback(role, code);
+  const label = role === 'SEND' ? 'envio' : 'recebimento';
   res
     .status(result.ok ? 200 : 400)
     .send(
       result.ok
-        ? `Gmail conectado: ${result.value}. Pode fechar esta aba.`
+        ? `Conta de ${label} conectada: ${result.value}. Pode fechar esta aba.`
         : `Falha: ${result.error}`,
     );
 });
 
-integrationsRouter.post('/gmail/test', requireAuth, async (_req, res) => {
-  const result = await gmailTestConnection();
-  res.status(result.ok ? 200 : 400).json(result.ok ? result.value : { error: result.error });
-});
-
-// --- Outlook OAuth ---
-integrationsRouter.get('/outlook/connect', requireAuth, (_req, res) => {
-  if (!outlookConfigured()) {
-    res.status(400).json({ error: 'Credenciais do Outlook não configuradas (.env).' });
+// Testar conexão de verdade.
+integrationsRouter.post('/:role/test', requireAuth, async (req, res) => {
+  const role = roleFromPath(req.params.role);
+  if (!role) {
+    res.status(404).json({ error: 'Integração desconhecida.' });
     return;
   }
-  res.json({ url: outlookAuthUrl() });
-});
-
-integrationsRouter.get('/outlook/callback', async (req, res) => {
-  const code = req.query.code as string | undefined;
-  if (!code) {
-    res.status(400).send('Código de autorização ausente.');
-    return;
-  }
-  const result = await outlookHandleCallback(code);
-  res
-    .status(result.ok ? 200 : 400)
-    .send(
-      result.ok
-        ? `Outlook conectado: ${result.value}. Pode fechar esta aba.`
-        : `Falha: ${result.error}`,
-    );
-});
-
-integrationsRouter.post('/outlook/test', requireAuth, async (_req, res) => {
-  const result = await outlookTestConnection();
+  const result = await gmailTestConnection(role);
   res.status(result.ok ? 200 : 400).json(result.ok ? result.value : { error: result.error });
 });

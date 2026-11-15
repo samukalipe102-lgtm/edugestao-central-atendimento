@@ -1,6 +1,6 @@
 import { prisma } from '../db.js';
 import { MATCH_CONFIDENCE, type MatchConfidence } from '@edugestao/shared';
-import type { InboundMessage } from '../integrations/outlook.js';
+import type { InboundMessage } from '../integrations/gmail.js';
 
 export interface MatchResult {
   requestId: string | null;

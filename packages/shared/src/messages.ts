@@ -8,10 +8,12 @@ export const MESSAGE_DIRECTION = {
 
 export type MessageDirection = (typeof MESSAGE_DIRECTION)[keyof typeof MESSAGE_DIRECTION];
 
-/** Provedor de e-mail de origem/destino de uma mensagem. */
+/** Provedor/conta de e-mail de origem/destino de uma mensagem. */
 export const MAIL_PROVIDER = {
-  GMAIL: 'GMAIL',
-  OUTLOOK: 'OUTLOOK',
+  /** Conta Gmail de envio (secretariaedugestao@gmail.com). */
+  GMAIL_SEND: 'GMAIL_SEND',
+  /** Conta Gmail de recebimento (admsedugestao@gmail.com). */
+  GMAIL_RECV: 'GMAIL_RECV',
 } as const;
 
 export type MailProvider = (typeof MAIL_PROVIDER)[keyof typeof MAIL_PROVIDER];

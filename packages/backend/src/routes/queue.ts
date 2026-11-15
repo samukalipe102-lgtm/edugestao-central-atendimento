@@ -66,9 +66,9 @@ queueRouter.post('/:id/cancel', async (req, res) => {
  * Verifica a conexão Gmail antes; só envia itens aprovados.
  */
 queueRouter.post('/start', async (_req, res) => {
-  const conn = await gmailTestConnection();
+  const conn = await gmailTestConnection('SEND');
   if (!conn.ok) {
-    res.status(400).json({ error: `Gmail não conectado: ${conn.error}` });
+    res.status(400).json({ error: `Gmail (envio) não conectado: ${conn.error}` });
     return;
   }
   const automation = await getAutomation();

@@ -137,7 +137,7 @@ export function RequestDetailPage() {
             }}
           >
             <div className="l" style={{ fontSize: '0.78rem' }}>
-              {m.direction === 'OUTBOUND' ? '→ Enviada (Gmail)' : '← Recebida (Outlook)'} ·{' '}
+              {m.direction === 'OUTBOUND' ? '→ Enviada (Gmail)' : '← Recebida (Gmail)'} ·{' '}
               {new Date(m.createdAt).toLocaleString('pt-BR')}
             </div>
             <div style={{ fontWeight: 600 }}>{m.subject}</div>

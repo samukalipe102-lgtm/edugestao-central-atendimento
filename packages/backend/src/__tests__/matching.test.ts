@@ -4,7 +4,7 @@ import { prisma } from '../db.js';
 import { matchInboundToRequest } from '../services/matching.js';
 import { generateProtocol } from '../services/protocol.js';
 import { canTransition } from '@edugestao/shared';
-import type { InboundMessage } from '../integrations/outlook.js';
+import type { InboundMessage } from '../integrations/gmail.js';
 
 /**
  * Testes da lógica mais crítica: vinculação de respostas e transições de status.
@@ -64,7 +64,7 @@ describe('vinculação de resposta ao protocolo', () => {
       data: {
         requestId: req.id,
         direction: 'OUTBOUND',
-        provider: 'GMAIL',
+        provider: 'GMAIL_SEND',
         fromAddress: 'secretariaedugestao@gmail.com',
         toAddress: 'maria@example.com',
         subject: `[${protocol}] documentos`,

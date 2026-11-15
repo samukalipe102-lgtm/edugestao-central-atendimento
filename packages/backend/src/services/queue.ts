@@ -79,7 +79,7 @@ export async function processQueueBatch(
                 data: {
                   requestId: item.requestId,
                   direction: 'OUTBOUND',
-                  provider: 'GMAIL',
+                  provider: 'GMAIL_SEND',
                   kind: item.kind,
                   fromAddress: 'secretariaedugestao@gmail.com',
                   toAddress: item.toAddress,

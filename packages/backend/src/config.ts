@@ -14,24 +14,17 @@ export const config = {
   jwtSecret: required('JWT_SECRET', 'dev-only-insecure-secret-change-me'),
   tokenEncryptionKey: process.env.TOKEN_ENCRYPTION_KEY ?? '',
 
+  // Um único app OAuth no Google Cloud atende as DUAS contas Gmail
+  // (envio e recebimento). Os redirect URIs diferem por conta.
   gmail: {
     clientId: process.env.GMAIL_CLIENT_ID ?? '',
     clientSecret: process.env.GMAIL_CLIENT_SECRET ?? '',
-    redirectUri:
-      process.env.GMAIL_REDIRECT_URI ??
-      'http://localhost:4000/api/integrations/gmail/callback',
-    configured(): boolean {
-      return Boolean(this.clientId && this.clientSecret);
-    },
-  },
-
-  microsoft: {
-    clientId: process.env.MS_CLIENT_ID ?? '',
-    clientSecret: process.env.MS_CLIENT_SECRET ?? '',
-    tenant: process.env.MS_TENANT ?? 'consumers',
-    redirectUri:
-      process.env.MS_REDIRECT_URI ??
-      'http://localhost:4000/api/integrations/outlook/callback',
+    sendRedirectUri:
+      process.env.GMAIL_SEND_REDIRECT_URI ??
+      'http://localhost:4000/api/integrations/gmail-send/callback',
+    recvRedirectUri:
+      process.env.GMAIL_RECV_REDIRECT_URI ??
+      'http://localhost:4000/api/integrations/gmail-recv/callback',
     configured(): boolean {
       return Boolean(this.clientId && this.clientSecret);
     },
