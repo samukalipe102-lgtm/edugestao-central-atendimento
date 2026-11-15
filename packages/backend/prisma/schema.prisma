@@ -1,0 +1,203 @@
+// EduGestão — Central de Atendimento Escolar
+// Banco é a FONTE ÚNICA DE VERDADE dos atendimentos.
+//
+// Começamos em SQLite (zero config, sem custo). Para migrar a PostgreSQL,
+// basta trocar `provider` e `DATABASE_URL`; os modelos são compatíveis.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Administrador do painel. Senha guardada como hash Argon2 — nunca em texto puro.
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         String   @default("ADMIN") // ADMIN | OPERADOR
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs AuditLog[]
+}
+
+/// Conta de e-mail integrada (Gmail=envio, Outlook=recebimento).
+/// Guarda apenas TOKENS OAuth (refresh/access), NUNCA senhas.
+model MailAccount {
+  id           String    @id @default(cuid())
+  provider     String    @unique // GMAIL | OUTLOOK
+  emailAddress String
+  purpose      String // ENVIO | RECEBIMENTO
+  // Tokens OAuth (podem ser cifrados em repouso — ver TokenVault no código).
+  accessToken  String?
+  refreshToken String?
+  tokenExpiry  DateTime?
+  scope        String?
+  connected    Boolean   @default(false)
+  lastSyncAt   DateTime?
+  lastError    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+/// Pessoa oficial do EduGestão (aluno, responsável, professor, funcionário).
+/// Preenchida SOMENTE a partir de documentos oficiais importados. Sem dados fictícios.
+model OfficialPerson {
+  id         String  @id @default(cuid())
+  kind       String // ALUNO | RESPONSAVEL | PROFESSOR | FUNCIONARIO
+  name       String
+  email      String?
+  document   String? // CPF/matrícula quando disponível
+  rawData    String? // JSON com campos extraídos, para rastreabilidade
+  importId   String
+  import     ImportBatch @relation(fields: [importId], references: [id])
+  createdAt  DateTime @default(now())
+
+  requests Request[]
+
+  @@index([email])
+  @@index([name])
+}
+
+/// Lote de importação de documentos oficiais. Mantém histórico; não apaga anteriores.
+model ImportBatch {
+  id          String   @id @default(cuid())
+  sourceName  String // nome do arquivo PDF/export (sem versionar o arquivo em si)
+  sourceHash  String? // hash do conteúdo, para detectar reimportação idêntica
+  importedBy  String
+  summary     String? // JSON: contagens, inconsistências detectadas
+  createdAt   DateTime @default(now())
+
+  people OfficialPerson[]
+}
+
+/// Solicitação = atendimento. NASCE SEMPRE de um e-mail recebido e validado.
+/// Nunca criada manualmente.
+model Request {
+  id              String   @id @default(cuid())
+  protocol        String?  @unique // gerado só após vínculo com dado oficial
+  status          String   @default("NOVA")
+  senderName      String
+  senderEmail     String
+  subject         String
+  // Vínculo com a base oficial. Null = não localizado → conferência humana.
+  officialPersonId String?
+  officialPerson   OfficialPerson? @relation(fields: [officialPersonId], references: [id])
+  needsHumanReview Boolean @default(false)
+  reviewReason     String?
+  createdAt       DateTime @default(now())
+  lastActivityAt  DateTime @default(now())
+  archivedAt      DateTime?
+
+  messages    Message[]
+  queueItems  OutboundQueue[]
+  statusLogs  StatusLog[]
+
+  @@index([status])
+  @@index([senderEmail])
+}
+
+/// Mensagem dentro de um atendimento (recebida no Outlook ou enviada pelo Gmail).
+/// Vinculação por Message-ID / References / In-Reply-To — não só por assunto.
+model Message {
+  id            String   @id @default(cuid())
+  requestId     String
+  request       Request  @relation(fields: [requestId], references: [id])
+  direction     String // INBOUND | OUTBOUND
+  provider      String // GMAIL | OUTLOOK
+  kind          String? // CORRECAO | AGRADECIMENTO | ... (só OUTBOUND)
+  fromAddress   String
+  toAddress     String
+  subject       String
+  body          String
+  // Cabeçalhos para vinculação confiável de conversas.
+  messageId     String?  @unique // Message-ID do provedor
+  inReplyTo     String?
+  references    String? // lista separada por espaço
+  providerMsgId String? // id interno do Gmail/Graph
+  sentAt        DateTime?
+  receivedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  attachments Attachment[]
+
+  @@index([requestId])
+  @@index([inReplyTo])
+}
+
+/// Anexo de uma mensagem. Conteúdo fica fora do banco (disco/objeto); aqui, metadados.
+model Attachment {
+  id         String  @id @default(cuid())
+  messageId  String
+  message    Message @relation(fields: [messageId], references: [id])
+  filename   String
+  mimeType   String
+  sizeBytes  Int
+  storageKey String // caminho/chave do arquivo guardado fora do banco
+  createdAt  DateTime @default(now())
+}
+
+/// Fila de envio pelo Gmail. Envio SEMPRE depende de aprovação administrativa.
+/// 10 msg / 5 min por padrão; retentativas controladas; pausa em erros repetidos.
+model OutboundQueue {
+  id           String   @id @default(cuid())
+  requestId    String?
+  request      Request? @relation(fields: [requestId], references: [id])
+  kind         String // COMMUNICATION_KIND
+  toAddress    String
+  subject      String
+  body         String
+  state        String   @default("RASCUNHO") // QUEUE_STATE
+  approvedBy   String?
+  approvedAt   DateTime?
+  attempts     Int      @default(0)
+  lastAttempt  DateTime?
+  lastError    String?
+  sentMessageId String? // Message-ID real após aceitação pela API
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([state])
+}
+
+/// Registro cronológico de mudanças de status de uma solicitação.
+model StatusLog {
+  id         String   @id @default(cuid())
+  requestId  String
+  request    Request  @relation(fields: [requestId], references: [id])
+  fromStatus String?
+  toStatus   String
+  actor      String // e-mail do admin ou "SISTEMA"
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  @@index([requestId])
+}
+
+/// Trilha de auditoria de todas as operações sensíveis (LGPD / rastreabilidade).
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      AdminUser? @relation(fields: [actorId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  metadata   String? // JSON
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
+
+/// Configurações do serviço editáveis pelo administrador (par chave/valor em JSON).
+/// Ex.: assinatura institucional, intervalo de poll, limites da fila, horários.
+model Setting {
+  key       String   @id
+  value     String // JSON
+  updatedAt DateTime @updatedAt
+}
