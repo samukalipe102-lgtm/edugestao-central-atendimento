@@ -56,7 +56,7 @@ jobs:
         working-directory: desktop
         run: |
           base="release/win-unpacked/resources/app"
-          for alvo in "$base/backend/dist/index.js" "$base/backend/generated/prisma-client/index.js" "$base/web/index.html" "$base/node_modules/@edugestao/shared/dist/index.js"; do
+          for alvo in "$base/backend/dist/index.js" "$base/backend/dist/services/import/index.js" "$base/backend/generated/prisma-client/index.js" "$base/web/index.html" "$base/node_modules/@edugestao/shared/dist/index.js" "$base/node_modules/unpdf/package.json"; do
             if [ ! -f "$alvo" ]; then
               echo "::error::Faltando no pacote: $alvo"
               ls -la "$base" 2>/dev/null || true

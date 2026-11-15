@@ -26,6 +26,7 @@ const PORTA = 47620;
 let janela = null;
 let portaServidor = 0;
 let servidorIniciado = false;
+let backendMod = null; // módulo do backend já carregado (expõe importarPdfs)
 
 /** Raiz dos recursos empacotados (resources/app) vs. desenvolvimento. */
 function raizRecursos() {
@@ -87,6 +88,7 @@ async function iniciarServidor() {
 
   const webDir = join(raiz, 'web');
   const mod = await import(pathToFileURL(entry).href);
+  backendMod = mod;
   const iniciar = mod.iniciar || mod.default?.iniciar;
   if (typeof iniciar !== 'function') {
     throw new Error("O módulo do backend não exporta 'iniciar'.");
@@ -115,6 +117,80 @@ async function criarJanela() {
   janela.on('closed', () => (janela = null));
 }
 
+/**
+ * Importa dados oficiais a partir de PDFs escolhidos pelo usuário.
+ * Abre um seletor de arquivos, chama o importador do backend e mostra o resumo.
+ * Os PDFs não são copiados nem guardados — só lidos para extração.
+ */
+async function importarDadosOficiais() {
+  if (!backendMod || typeof backendMod.importarPdfs !== 'function') {
+    await dialog.showMessageBox(janela ?? undefined, {
+      type: 'error',
+      title: 'Importação indisponível',
+      message: 'O servidor interno ainda não terminou de iniciar. Tente novamente em instantes.',
+    });
+    return;
+  }
+
+  const escolha = await dialog.showOpenDialog(janela ?? undefined, {
+    title: 'Selecione os PDFs oficiais da escola',
+    properties: ['openFile', 'multiSelections'],
+    filters: [{ name: 'PDF', extensions: ['pdf'] }],
+  });
+  if (escolha.canceled || escolha.filePaths.length === 0) return;
+
+  // Pergunta o tipo presumido (caso o PDF não traga rótulos claros).
+  const { response: tipoIdx } = await dialog.showMessageBox(janela ?? undefined, {
+    type: 'question',
+    title: 'Tipo de pessoas neste(s) PDF(s)',
+    message: 'Se o PDF não indicar o tipo, qual é o conteúdo predominante?',
+    detail:
+      'Registros que o próprio PDF rotular (ex.: "Responsável") são classificados automaticamente; ' +
+      'os demais usam esta opção.',
+    buttons: ['Alunos', 'Responsáveis', 'Professores', 'Funcionários', 'Cancelar'],
+    cancelId: 4,
+    defaultId: 0,
+  });
+  if (tipoIdx === 4) return;
+  const kinds = ['ALUNO', 'RESPONSAVEL', 'PROFESSOR', 'FUNCIONARIO'];
+  const defaultKind = kinds[tipoIdx] ?? 'ALUNO';
+
+  try {
+    const outcomes = await backendMod.importarPdfs({
+      files: escolha.filePaths,
+      defaultKind,
+      importedBy: 'app:desktop',
+    });
+
+    const linhas = outcomes.map((o) => {
+      if (!o.ok) return `✗ ${o.file}: ${o.error}`;
+      const r = o.result;
+      let s = `✓ ${o.file}: ${r.created} cadastrado(s), ${r.duplicatesSkipped} duplicado(s) ignorado(s)`;
+      if (r.inconsistencies.length > 0) {
+        s += `, ${r.inconsistencies.length} com dados incompletos`;
+      }
+      return s;
+    });
+
+    const algumOk = outcomes.some((o) => o.ok);
+    await dialog.showMessageBox(janela ?? undefined, {
+      type: algumOk ? 'info' : 'warning',
+      title: 'Importação concluída',
+      message: algumOk ? 'Dados oficiais importados.' : 'Nenhum PDF pôde ser importado.',
+      detail: linhas.join('\n'),
+    });
+    // Atualiza o painel para refletir a nova base.
+    janela?.webContents.reload();
+  } catch (e) {
+    await dialog.showMessageBox(janela ?? undefined, {
+      type: 'error',
+      title: 'Erro na importação',
+      message: 'Não foi possível concluir a importação.',
+      detail: String(e && e.stack ? e.stack : e),
+    });
+  }
+}
+
 function montarMenu() {
   const template = [
     {
@@ -123,6 +199,10 @@ function montarMenu() {
         {
           label: 'Configurar credenciais…',
           click: () => janela?.webContents.send('abrir-config'),
+        },
+        {
+          label: 'Importar dados oficiais (PDF)…',
+          click: () => void importarDadosOficiais(),
         },
         { type: 'separator' },
         { role: 'reload', label: 'Recarregar' },

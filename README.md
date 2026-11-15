@@ -4,7 +4,7 @@ Central de atendimento escolar **operada por e-mail**. Organiza, acompanha e
 responde solicitações recebidas por e-mail, com integrações reais:
 
 - **Gmail** (`secretariaedugestao@gmail.com`) — conta oficial de **envio** (Gmail API, OAuth 2.0).
-- **Outlook** (`admsedugestao@outlook.com`) — conta oficial de **recebimento** (Microsoft Graph API).
+- **Gmail** (`admsedugestao@gmail.com`) — conta oficial de **recebimento** (Gmail API, OAuth 2.0).
 
 > Este NÃO é um formulário de abertura de chamados. É uma central automatizada de
 > gestão de atendimento por e-mail. Toda entrada de solicitação nasce de um e-mail
@@ -45,11 +45,14 @@ docs/        Guias de configuração (OAuth Gmail) e arquitetura
 | Painel web (responsivo, 6 telas) | pronto (build limpo) |
 | Integração Gmail — envio (`secretariaedugestao@gmail.com`) | pronto; falta você conectar o OAuth |
 | Integração Gmail — recebimento (`admsedugestao@gmail.com`) | pronto; falta você conectar o OAuth |
+| Importação dos dados oficiais (PDF → base de pessoas) | pronto e testado |
 | App desktop Windows (Electron) | pronto; `.exe` gerado por GitHub Actions em tags `v*` |
 | IA de acompanhamento | desligada por opção (encaixe preparado para Gemini) |
 
 Para rodar como servidor, veja `docs/SETUP.md`. Para rodar como app, veja
 `desktop/README.md`. Para conectar as contas Gmail, veja `docs/INTEGRACAO-GMAIL.md`.
+Para importar os dados oficiais da escola, veja `docs/IMPORTACAO-PDF.md` (ou, no
+app, menu **Arquivo → Importar dados oficiais (PDF)**).
 
 ## Testes
 
