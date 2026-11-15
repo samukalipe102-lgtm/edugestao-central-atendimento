@@ -6,6 +6,9 @@
 
 generator client {
   provider = "prisma-client-js"
+  // Output determinístico dentro do backend, para o bundle do app desktop
+  // resolver o client de forma previsível (ao lado do bundle, em prisma-client/).
+  output   = "../generated/prisma-client"
 }
 
 datasource db {

@@ -57,6 +57,10 @@ export async function iniciar(
   webDir?: string,
   withWorker = false,
 ): Promise<number> {
+  // Na primeira execução (app desktop), cria o schema do banco se necessário.
+  const { ensureSchema } = await import('./bootstrap.js');
+  await ensureSchema();
+
   const app = createApp(webDir);
   const server = await new Promise<import('node:http').Server>((resolve) => {
     const s = app.listen(port, () => resolve(s));

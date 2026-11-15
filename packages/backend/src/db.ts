@@ -1,4 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+// Client gerado em caminho determinístico (ver schema.prisma `output`).
+// Facilita o empacotamento do app desktop: o client acompanha o backend.
+import { PrismaClient } from '../generated/prisma-client/index.js';
 
 /**
  * Prisma Client único e compartilhado. Logging restrito a erro/aviso — nunca

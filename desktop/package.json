@@ -1,0 +1,81 @@
+{
+  "name": "edugestao-central-desktop",
+  "productName": "EduGestão Central de Atendimento",
+  "version": "0.1.0",
+  "private": true,
+  "description": "App desktop da Central de Atendimento Escolar EduGestão (envio/recebimento por Gmail).",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "argon2": "^0.41.1",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "googleapis": "^144.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.23.8"
+  },
+  "build": {
+    "appId": "br.edugestao.central",
+    "productName": "EduGestão Central de Atendimento",
+    "asar": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "config.js",
+      "preload.js",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../packages/backend/dist",
+        "to": "app/backend/dist"
+      },
+      {
+        "from": "../packages/backend/generated",
+        "to": "app/backend/generated"
+      },
+      {
+        "from": "../packages/backend/prisma",
+        "to": "app/backend/prisma"
+      },
+      {
+        "from": "../packages/web/dist",
+        "to": "app/web"
+      },
+      {
+        "from": "../packages/shared/dist",
+        "to": "app/node_modules/@edugestao/shared/dist"
+      },
+      {
+        "from": "../packages/shared/package.json",
+        "to": "app/node_modules/@edugestao/shared/package.json"
+      }
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "artifactName": "EduGestaoCentral-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "EduGestão Central"
+    }
+  }
+}

@@ -28,10 +28,11 @@ responde solicitações recebidas por e-mail, com integrações reais:
 ```
 packages/
   shared/    Tipos e contratos compartilhados (status, enums, DTOs)
-  backend/   API REST + Prisma (fonte única de verdade) + Gmail/Graph
-  worker/    Processos em segundo plano (poll Outlook, fila de envio) — cron real
+  backend/   API REST + Prisma (fonte única de verdade) + Gmail (envio e recebimento)
+  worker/    Processos em segundo plano (poll recebimento, fila de envio) — cron real
   web/       Painel administrativo (React + Vite), responsivo
-docs/        Guias de configuração (OAuth Gmail, Azure/Graph), arquitetura
+desktop/     App Windows (Electron) que empacota backend + worker + painel
+docs/        Guias de configuração (OAuth Gmail) e arquitetura
 ```
 
 ## Estado atual
@@ -40,14 +41,15 @@ docs/        Guias de configuração (OAuth Gmail, Azure/Graph), arquitetura
 |---|---|
 | Monorepo + banco (schema completo, migração aplicada) | pronto |
 | API backend (auth, solicitações, fila, dashboard, relatórios, settings) | pronto e testado |
-| Worker de segundo plano (poll Outlook + fila de envio, com pausa em falhas) | pronto |
+| Worker de segundo plano (poll recebimento + fila de envio, com pausa em falhas) | pronto |
 | Painel web (responsivo, 6 telas) | pronto (build limpo) |
-| Integração Gmail (envio) — código real | pronto; falta você conectar o OAuth (`docs/INTEGRACAO-GMAIL.md`) |
-| Integração Outlook (recebimento) — código real | pronto; falta registrar no Azure (`docs/INTEGRACAO-OUTLOOK.md`) |
+| Integração Gmail — envio (`secretariaedugestao@gmail.com`) | pronto; falta você conectar o OAuth |
+| Integração Gmail — recebimento (`admsedugestao@gmail.com`) | pronto; falta você conectar o OAuth |
+| App desktop Windows (Electron) | pronto; `.exe` gerado por GitHub Actions em tags `v*` |
 | IA de acompanhamento | desligada por opção (encaixe preparado para Gemini) |
 
-Para rodar, veja `docs/SETUP.md`. Para conectar os e-mails, veja os dois guias de
-integração em `docs/`.
+Para rodar como servidor, veja `docs/SETUP.md`. Para rodar como app, veja
+`desktop/README.md`. Para conectar as contas Gmail, veja `docs/INTEGRACAO-GMAIL.md`.
 
 ## Testes
 

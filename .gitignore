@@ -37,3 +37,7 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Prisma client gerado (determinístico) — regenerado no build
+packages/backend/generated/
+desktop/server/

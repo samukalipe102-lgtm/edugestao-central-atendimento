@@ -1,0 +1,81 @@
+name: Build Desktop (EduGestão Central .exe)
+
+# Compila o instalador Windows do app desktop (Electron) da Central de Atendimento.
+# Dispara em tags "v*" e sob demanda. Instalador (NSIS) e versão portátil ficam
+# em Artifacts e, para tags, são anexados ao Release pelo github-actions[bot].
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-desktop-windows:
+    runs-on: windows-latest
+    env:
+      DATABASE_URL: "file:./dev.db"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 1) Dependências do monorepo + client Prisma + builds
+      - name: Instalar dependências (monorepo)
+        run: npm ci
+
+      - name: Gerar client Prisma
+        working-directory: packages/backend
+        run: npx prisma generate
+
+      - name: Build shared + backend + web
+        run: |
+          npm run build -w packages/shared
+          npm run build -w packages/backend
+          npm run build -w packages/web
+
+      # 2) Dependências do desktop (Electron + builder + runtime do backend)
+      - name: Instalar dependências do desktop
+        working-directory: desktop
+        run: npm install
+
+      # 3) Empacota o instalador (NSIS) + portátil
+      - name: Gerar instalador Windows
+        working-directory: desktop
+        run: npm run dist:win
+
+      # 3b) Garante que backend (dist + client Prisma) e painel foram empacotados
+      - name: Verificar conteúdo empacotado
+        shell: bash
+        working-directory: desktop
+        run: |
+          base="release/win-unpacked/resources/app"
+          for alvo in "$base/backend/dist/index.js" "$base/backend/generated/prisma-client/index.js" "$base/web/index.html" "$base/node_modules/@edugestao/shared/dist/index.js"; do
+            if [ ! -f "$alvo" ]; then
+              echo "::error::Faltando no pacote: $alvo"
+              ls -la "$base" 2>/dev/null || true
+              exit 1
+            fi
+          done
+          echo "OK: backend, client Prisma e painel web empacotados."
+
+      - name: Publicar artefatos (instalador + portátil)
+        uses: actions/upload-artifact@v4
+        with:
+          name: edugestao-central-windows
+          path: desktop/release/*.exe
+          if-no-files-found: error
+
+      - name: Anexar ao Release (apenas em tags)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: desktop/release/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
